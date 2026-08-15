@@ -20,9 +20,10 @@ export class AuthService {
       throw new NotFoundException("Credenciais inválidas");
     }
     const payload = {
-      sub: user.email,
+      sub: user.id,
       username: user.name,
       perfil: user.perfil,
+      email: user.email,
     };
     return {
       access_token: await this.jwtService.signAsync(payload),

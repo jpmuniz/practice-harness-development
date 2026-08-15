@@ -18,6 +18,7 @@ export interface AuthenticatedUser {
   sub: string;
   username: string;
   perfil: Perfil;
+  email?: string;
 }
 
 @Injectable()
