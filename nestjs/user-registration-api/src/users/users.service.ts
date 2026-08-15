@@ -98,10 +98,22 @@ export class UsersService {
       data.password = await bcrypt.hash(updateUserDto.password, 10);
     }
 
-    return this.userRepository.updateUser({
-      where: { id },
-      data,
-    });
+    try {
+      return await this.userRepository.updateUser({
+        where: { id },
+        data,
+      });
+    } catch (error: unknown) {
+      if (
+        typeof error === 'object' &&
+        error !== null &&
+        'code' in error &&
+        (error as { code: string }).code === 'P2025'
+      ) {
+        throw new NotFoundException(`Usuário com id ${id} não encontrado`);
+      }
+      throw error;
+    }
   }
 
   async remove(id: string) {

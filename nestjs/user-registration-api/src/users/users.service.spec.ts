@@ -160,4 +160,13 @@ describe('UsersService.update', () => {
       repo.updateUser.mock.results[0].value,
     ).resolves.not.toHaveProperty('password');
   });
+
+  it('throws 404 when prisma update reports record missing', async () => {
+    repo.getUserById.mockResolvedValue(existing);
+    repo.updateUser.mockRejectedValue({ code: 'P2025' });
+
+    await expect(
+      service.update(userId, { name: 'Gone' }, admin),
+    ).rejects.toBeInstanceOf(NotFoundException);
+  });
 });

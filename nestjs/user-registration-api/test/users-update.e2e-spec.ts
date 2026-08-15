@@ -151,4 +151,19 @@ describe('PATCH /users/:id (e2e)', () => {
       .send({ name: 'X' })
       .expect(400);
   });
+
+  it('returns 400 for invalid email format', async () => {
+    await request(app.getHttpServer())
+      .patch(`/users/${userAId}`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ email: 'not-an-email' })
+      .expect(400);
+  });
+
+  it('returns 401 when caller is unauthenticated', async () => {
+    await request(app.getHttpServer())
+      .patch(`/users/${userAId}`)
+      .send({ name: 'No Auth' })
+      .expect(401);
+  });
 });
