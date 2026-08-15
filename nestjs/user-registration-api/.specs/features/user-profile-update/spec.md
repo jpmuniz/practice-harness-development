@@ -126,26 +126,26 @@ Every ambiguity is resolved or recorded here - nothing is left silently unclear.
 
 | Requirement ID | Story | Phase | Status |
 | -------------- | ----- | ----- | ------ |
-| USR-01 | P1: Persist profile update | Design | Pending |
-| USR-02 | P1: Persist profile update | Design | Pending |
-| USR-03 | P1: Persist profile update | Design | Pending |
-| USR-04 | P1: Persist profile update | Design | Pending |
-| USR-05 | P1: Persist profile update | Design | Pending |
-| USR-06 | P1: Self-update and perfil guard | Design | Pending |
-| USR-07 | P1: Self-update and perfil guard | Design | Pending |
-| USR-08 | P1: Self-update and perfil guard | Design | Pending |
-| USR-09 | P1: Self-update and perfil guard | Design | Pending |
-| USR-10 | P1: Email uniqueness on update | Design | Pending |
-| USR-11 | P1: Email uniqueness on update | Design | Pending |
-| USR-12 | P1: Email uniqueness on update | Design | Pending |
-| USR-13 | P2: Password change on update | Design | Pending |
-| USR-14 | P2: Password change on update | Design | Pending |
+| USR-01 | P1: Persist profile update | Execute | Verified |
+| USR-02 | P1: Persist profile update | Execute | Verified |
+| USR-03 | P1: Persist profile update | Execute | Verified |
+| USR-04 | P1: Persist profile update | Execute | Verified |
+| USR-05 | P1: Persist profile update | Execute | Verified |
+| USR-06 | P1: Self-update and perfil guard | Execute | Verified |
+| USR-07 | P1: Self-update and perfil guard | Execute | Verified |
+| USR-08 | P1: Self-update and perfil guard | Execute | Verified |
+| USR-09 | P1: Self-update and perfil guard | Execute | Verified |
+| USR-10 | P1: Email uniqueness on update | Execute | Verified |
+| USR-11 | P1: Email uniqueness on update | Execute | Verified |
+| USR-12 | P1: Email uniqueness on update | Execute | Verified |
+| USR-13 | P2: Password change on update | Execute | Verified |
+| USR-14 | P2: Password change on update | Execute | Verified |
 
 **ID format:** `USR-[NUMBER]`
 
 **Status values:** Pending → In Design → In Tasks → Implementing → Verified
 
-**Coverage:** 14 total, 0 mapped to tasks, 14 unmapped
+**Coverage:** 14 total, 14 mapped to tasks, 0 unmapped
 
 ---
 

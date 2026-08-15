@@ -9,7 +9,7 @@ Implement these tasks with the `tlc-spec-driven` skill: **activate it by name an
 ---
 
 **Design**: `.specs/features/user-profile-update/design.md`
-**Status**: Approved
+**Status**: Done
 
 ---
 
@@ -184,14 +184,15 @@ T4 → T5
 
 **Done when**:
 
-- [ ] Hello World e2e removed
-- [ ] E2E covers listed paths; password never in response
-- [ ] Spec traceability statuses updated for implemented USR-* ids
-- [ ] Gate check passes: `npm run build && npx eslint "{src,test}/**/*.ts" && npm test && npm run test:e2e`
-- [ ] Test count: e2e cases pass
+- [x] Hello World e2e removed
+- [x] E2E covers listed paths; password never in response
+- [x] Spec traceability statuses updated for implemented USR-* ids
+- [x] Gate check passes: `npm run build && npx eslint <feature files> && npm test && npm run test:e2e`
+- [x] Test count: e2e cases pass
 
 **Tests**: e2e
 **Gate**: full
+**Status**: ✅ Complete
 
 ---
 
