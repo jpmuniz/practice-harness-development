@@ -130,14 +130,15 @@ T4 → T5
 
 **Done when**:
 
-- [ ] Stub string response removed; id type is `string`
-- [ ] Repository update omits password on return
-- [ ] Unit tests cover happy path, 404, 400 empty, 403 perfil, 409 email, password hashed, omit password, self-same email allowed
-- [ ] Gate check passes: `npm test`
-- [ ] Test count: tests pass (no silent deletions)
+- [x] Stub string response removed; id type is `string`
+- [x] Repository update omits password on return
+- [x] Unit tests cover happy path, 404, 400 empty, 403 perfil, 409 email, password hashed, omit password, self-same email allowed
+- [x] Gate check passes: `npm test`
+- [x] Test count: tests pass (no silent deletions)
 
 **Tests**: unit
 **Gate**: quick
+**Status**: ✅ Complete
 
 ---
 

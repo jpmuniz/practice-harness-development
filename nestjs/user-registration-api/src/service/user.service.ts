@@ -14,6 +14,13 @@ export class UsersRepository {
       omit: { password: true },
     });
   }
+
+  async getUserById(id: string): Promise<Omit<User, 'password'> | null> {
+    return this.prisma.user.findUnique({
+      where: { id },
+      omit: { password: true },
+    });
+  }
   async getUserWithPassword(email: string): Promise<User | null> {
     return this.prisma.user.findUnique({
       where: { email },
@@ -39,11 +46,12 @@ export class UsersRepository {
   async updateUser(params: {
     where: Prisma.UserWhereUniqueInput;
     data: Prisma.UserUpdateInput;
-  }): Promise<User> {
+  }): Promise<Omit<User, 'password'>> {
     const { where, data } = params;
     return this.prisma.user.update({
       data,
       where,
+      omit: { password: true },
     });
   }
 
