@@ -29,10 +29,10 @@
 ## Handoff
 
 - **Feature**: user-profile-update
-- **Phase / Task**: Execute / T1 - JWT sub = user id
-- **Completed**: bootstrap, specify, design, tasks (validate_tasks OK)
-- **In-progress**: T1
-- **Next step**: Implement T1 AuthService payload + unit tests
+- **Phase / Task**: Execute complete — Verifier PASS
+- **Completed**: T1–T5, fix iteration (USR-12/401/P2025), validation.md PASS
+- **In-progress**: none
+- **Next step**: none — feature ready; push only with explicit go-ahead
 - **Blockers**: none
-- **Uncommitted files**: `.specs/`
+- **Uncommitted files**: validation.md, lessons store, `.cursor/` (untracked skill install)
 - **Branch**: master
