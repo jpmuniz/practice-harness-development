@@ -6,11 +6,9 @@ import { User, Prisma } from '../generated/prisma/client';
 export class UsersRepository {
   constructor(private prisma: PrismaService) {}
 
-  async getUser(
-    email: string,
-  ): Promise<Omit<User, 'password'> | null> {
+  async getUser(email: string): Promise<Omit<User, 'password'> | null> {
     return this.prisma.user.findUnique({
-      where: {email: email},
+      where: { email: email },
       omit: { password: true },
     });
   }
@@ -33,8 +31,8 @@ export class UsersRepository {
     where?: Prisma.UserWhereInput;
     orderBy?: Prisma.UserOrderByWithRelationInput;
   }): Promise<User[]> {
-    const { skip, take, cursor, where, orderBy } = params;
-    return  await this.prisma.user.findMany();
+    void params;
+    return await this.prisma.user.findMany();
   }
 
   async createUser(data: Prisma.UserCreateInput): Promise<User> {
@@ -57,9 +55,9 @@ export class UsersRepository {
 
   async deleteUser(where: Prisma.UserWhereUniqueInput): Promise<User> {
     return this.prisma.user.delete({
-      where :  {
-        id : where.id
-      }
+      where: {
+        id: where.id,
+      },
     });
   }
 }

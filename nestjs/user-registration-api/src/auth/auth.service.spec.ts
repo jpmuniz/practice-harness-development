@@ -65,8 +65,8 @@ describe('AuthService', () => {
     usersRepository.getUserWithPassword.mockResolvedValue(user);
     jest.mocked(bcrypt.compare).mockResolvedValue(false as never);
 
-    await expect(authService.signIn(user.email, 'wrong')).rejects.toBeInstanceOf(
-      NotFoundException,
-    );
+    await expect(
+      authService.signIn(user.email, 'wrong'),
+    ).rejects.toBeInstanceOf(NotFoundException);
   });
 });

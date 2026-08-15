@@ -156,8 +156,8 @@ describe('UsersService.update', () => {
       where: { id: userId },
       data: { password: 'hashed-password' },
     });
-    expect(repo.updateUser.mock.results[0].value).resolves.not.toHaveProperty(
-      'password',
-    );
+    await expect(
+      repo.updateUser.mock.results[0].value,
+    ).resolves.not.toHaveProperty('password');
   });
 });
