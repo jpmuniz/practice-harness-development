@@ -104,13 +104,14 @@ T4 → T5
 
 **Done when**:
 
-- [ ] Guard implements CanActivate with admin/self rules
-- [ ] Unit tests cover admin allow, self allow, other-user deny
-- [ ] Gate check passes: `npm test`
-- [ ] Test count: tests pass (no silent deletions)
+- [x] Guard implements CanActivate with admin/self rules
+- [x] Unit tests cover admin allow, self allow, other-user deny
+- [x] Gate check passes: `npm test`
+- [x] Test count: tests pass (no silent deletions)
 
 **Tests**: unit
 **Gate**: quick
+**Status**: ✅ Complete
 
 ---
 
