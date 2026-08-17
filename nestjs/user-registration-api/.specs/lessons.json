@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "promote_threshold": 2,
+  "window_days": 45,
+  "quarantine_threshold": 2,
+  "next_id": 4,
+  "lessons": [
+    {
+      "id": "L-001",
+      "key": "ac_gap::every validation ac must ship with an http level or unit assertion for invalid field formats not only happy path updates",
+      "text": "Todo critério de aceite de validação deve nascer com assertion HTTP ou unit para formatos inválidos de campo, não só happy path.",
+      "signal": "ac_gap",
+      "scope": "users",
+      "status": "candidate",
+      "features": [
+        "user-profile-update"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "USR-12 (users)"
+      ],
+      "created": "2026-08-15T19:27:14Z",
+      "last_seen": "2026-08-15T19:27:14Z"
+    },
+    {
+      "id": "L-002",
+      "key": "ac_gap::route e2e suites must assert the global auth boundary with an unauthenticated request when the feature is behind authguard",
+      "text": "Suites e2e de rota devem assertar a fronteira global de auth com request sem token quando a feature está atrás do AuthGuard.",
+      "signal": "ac_gap",
+      "scope": "users",
+      "status": "candidate",
+      "features": [
+        "user-profile-update"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "edge:unauthenticated (users)"
+      ],
+      "created": "2026-08-15T19:27:15Z",
+      "last_seen": "2026-08-15T19:27:15Z"
+    },
+    {
+      "id": "L-003",
+      "key": "ac_gap::translate prisma record not found p2025 on update into notfoundexception and cover it with a service test",
+      "text": "Traduzir Prisma record-not-found (P2025) no update para NotFoundException e cobrir com teste de service.",
+      "signal": "ac_gap",
+      "scope": "users",
+      "status": "candidate",
+      "features": [
+        "user-profile-update"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "edge:P2025 (users)"
+      ],
+      "created": "2026-08-15T19:27:15Z",
+      "last_seen": "2026-08-15T19:27:15Z"
+    }
+  ]
+}

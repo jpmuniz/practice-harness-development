@@ -7,7 +7,10 @@ import {
   Param,
   Delete,
   UseGuards,
+  Req,
+  ParseUUIDPipe,
 } from '@nestjs/common';
+import type { Request } from 'express';
 import { UsersService } from './users.service';
 import { UserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -19,6 +22,8 @@ import {
   CreateUserPolicyHandler,
   DeleteUserPolicyHandler,
 } from 'src/casl/policies/user.policies';
+import { UpdateUserGuard } from './update-user.guard';
+import { AuthenticatedUser } from 'src/casl/casl-ability.factory/casl-ability.factory';
 
 @Controller('users')
 export class UsersController {
@@ -44,8 +49,13 @@ export class UsersController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersProvider.update(+id, updateUserDto);
+  @UseGuards(UpdateUserGuard)
+  update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateUserDto: UpdateUserDto,
+    @Req() req: Request & { user: AuthenticatedUser },
+  ) {
+    return this.usersProvider.update(id, updateUserDto, req.user);
   }
 
   @Delete(':id')
