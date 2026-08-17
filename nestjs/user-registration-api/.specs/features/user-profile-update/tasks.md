@@ -1,10 +1,10 @@
-# User Profile Update Tasks
+# Tasks — Atualização de Perfil de Usuário
 
 ## Execution Protocol (MANDATORY -- do not skip)
 
-Implement these tasks with the `tlc-spec-driven` skill: **activate it by name and follow its Execute flow and Critical Rules.** Do not search for skill files by filesystem path. The skill is the source of truth for the full flow (per-task cycle, sub-agent delegation, adequacy review, Verifier, discrimination sensor).
+Implementar estas tasks com a skill `tlc-spec-driven`: **ative-a pelo nome e siga o fluxo Execute e as Critical Rules.** Não procure arquivos da skill por caminho no filesystem. A skill é a fonte da verdade do fluxo completo (ciclo por task, delegação a sub-agentes, revisão de adequação, Verifier, sensor de discriminação).
 
-**If the skill cannot be activated, STOP and tell the user - do not proceed without it.**
+**Se a skill não puder ser ativada, PARE e avise o usuário — não prossiga sem ela.**
 
 ---
 
@@ -15,39 +15,39 @@ Implement these tasks with the `tlc-spec-driven` skill: **activate it by name an
 
 ## Test Coverage Matrix
 
-> Generated from codebase, project guidelines, and spec - confirm before Execute. Guidelines found: none - strong defaults applied. Floor: Nest Jest unit under `src/**/*.spec.ts`; e2e under `test/*.e2e-spec.ts`.
+> Gerada a partir do codebase, guidelines do projeto e da spec — confirmar antes do Execute. Guidelines encontradas: nenhuma — defaults fortes aplicados. Piso: unit Nest Jest em `src/**/*.spec.ts`; e2e em `test/*.e2e-spec.ts`.
 
 | Code Layer | Required Test Type | Coverage Expectation | Location Pattern | Run Command |
 | ---------- | ------------------ | -------------------- | ---------------- | ----------- |
-| UsersService (domain/business) | unit | 1:1 to USR ACs in service scope; all listed edge cases for update rules | `src/**/*.spec.ts` | `npm test` |
-| UpdateUserGuard | unit | Admin allow, self allow, cross-user deny | `src/**/*.spec.ts` | `npm test` |
-| AuthService payload | unit | `sub` equals user.id | `src/**/*.spec.ts` | `npm test` |
-| UsersController / PATCH route | e2e | Happy path admin + self; 403/404/409; no password in body | `test/*.e2e-spec.ts` | `npm run test:e2e` |
-| DTO / entity | none | build gate only | - | build gate only |
+| UsersService (domínio/negócio) | unit | 1:1 com ACs USR no escopo do service; todos os edge cases de update listados | `src/**/*.spec.ts` | `npm test` |
+| UpdateUserGuard | unit | Admin permite, self permite, cross-user nega | `src/**/*.spec.ts` | `npm test` |
+| AuthService payload | unit | `sub` igual a user.id | `src/**/*.spec.ts` | `npm test` |
+| UsersController / rota PATCH | e2e | Happy path admin + self; 403/404/409; sem password no body | `test/*.e2e-spec.ts` | `npm run test:e2e` |
+| DTO / entity | none | só gate de build | - | build gate only |
 
 ## Gate Check Commands
 
-> Generated from codebase - confirm before Execute. Lint without `--fix` per AD-002.
+> Gerado a partir do codebase — confirmar antes do Execute. Lint sem `--fix` conforme AD-002.
 
 | Gate Level | When to Use | Command |
 | ---------- | ----------- | ------- |
-| Quick | After tasks with unit tests only | `npm test` |
-| Full | After tasks with e2e/integration tests | `npm test && npm run test:e2e` |
-| Build | After phase completion or config/entity-only tasks | `npm run build && npx eslint "{src,test}/**/*.ts" && npm test && npm run test:e2e` |
+| Quick | Após tasks só com unit tests | `npm test` |
+| Full | Após tasks com e2e/integration | `npm test && npm run test:e2e` |
+| Build | Após fim de fase ou tasks só de config/entity | `npm run build && npx eslint "{src,test}/**/*.ts" && npm test && npm run test:e2e` |
 
 ---
 
 ## Execution Plan
 
-Phases are ordered and run sequentially - each phase completes before the next begins, and tasks within a phase execute in order.
+Fases ordenadas e sequenciais — cada fase termina antes da próxima; tasks dentro da fase rodam em ordem.
 
-### Phase 1: Auth foundation
+### Phase 1: Fundação de auth
 
 ```
 T1
 ```
 
-### Phase 2: Authorization + domain update
+### Phase 2: Autorização + update de domínio
 
 ```
 T2 → T3
@@ -63,12 +63,12 @@ T4 → T5
 
 ## Task Breakdown
 
-### T1: Put user UUID in JWT sub
+### T1: Colocar UUID do usuário no JWT sub
 
-**What**: Change AuthService signIn payload so `sub` is `user.id`; include `email` claim; keep `username` and `perfil`.
+**What**: Alterar o payload de signIn do AuthService para `sub` = `user.id`; incluir claim `email`; manter `username` e `perfil`.
 **Where**: `src/auth/auth.service.ts`
 **Depends on**: None
-**Reuses**: Existing signIn / bcrypt compare flow
+**Reuses**: Fluxo atual de signIn / bcrypt compare
 **Requirement**: USR-06
 
 **Tools**:
@@ -78,10 +78,10 @@ T4 → T5
 
 **Done when**:
 
-- [x] Payload `sub` is the persisted user UUID
-- [x] Unit tests assert `sub === user.id` and include email/perfil/username
-- [x] Gate check passes: `npm test`
-- [x] Test count: at least 1 new test file passes
+- [x] Payload `sub` é o UUID persistido do usuário
+- [x] Unit tests assertam `sub === user.id` e incluem email/perfil/username
+- [x] Gate passa: `npm test`
+- [x] Contagem de testes: pelo menos 1 arquivo novo passa
 
 **Tests**: unit
 **Gate**: quick
@@ -89,12 +89,12 @@ T4 → T5
 
 ---
 
-### T2: Add UpdateUserGuard for admin-or-self
+### T2: Adicionar UpdateUserGuard admin-ou-self
 
-**What**: Create guard that allows PATCH when actor `perfil` is admin OR `request.user.sub === params.id`; otherwise 403.
+**What**: Criar guard que permite PATCH quando o ator tem `perfil` admin OU `request.user.sub === params.id`; caso contrário 403.
 **Where**: `src/users/update-user.guard.ts`
 **Depends on**: T1
-**Reuses**: `AuthenticatedUser` / Perfil enum; ForbiddenException message style from PoliciesGuard
+**Reuses**: `AuthenticatedUser` / enum Perfil; estilo de mensagem ForbiddenException do PoliciesGuard
 **Requirement**: USR-06, USR-07
 
 **Tools**:
@@ -104,10 +104,10 @@ T4 → T5
 
 **Done when**:
 
-- [x] Guard implements CanActivate with admin/self rules
-- [x] Unit tests cover admin allow, self allow, other-user deny
-- [x] Gate check passes: `npm test`
-- [x] Test count: tests pass (no silent deletions)
+- [x] Guard implementa CanActivate com regras admin/self
+- [x] Unit tests cobrem admin permite, self permite, outro usuário nega
+- [x] Gate passa: `npm test`
+- [x] Contagem de testes: suite passa (sem deleções silenciosas)
 
 **Tests**: unit
 **Gate**: quick
@@ -115,12 +115,12 @@ T4 → T5
 
 ---
 
-### T3: Implement UsersService.update with business rules
+### T3: Implementar UsersService.update com regras de negócio
 
-**What**: Replace stub with real update: load by UUID string, empty-body 400, normal+perfil 403, email uniqueness 409, hash password, persist via repository, return user without password. Adjust repository update to omit password if needed.
+**What**: Substituir stub por update real: carregar por UUID string, body vazio 400, normal+perfil 403, unicidade de e-mail 409, hash de password, persistir via repository, retornar usuário sem password. Ajustar repository para omitir password se preciso. Traduzir P2025 para 404.
 **Where**: `src/users/users.service.ts`
 **Depends on**: T2
-**Reuses**: `UsersRepository.updateUser` / `getUser`; bcrypt saltRounds 10 from create
+**Reuses**: `UsersRepository.updateUser` / `getUser`; bcrypt saltRounds 10 do create
 **Requirement**: USR-01, USR-02, USR-03, USR-04, USR-05, USR-08, USR-09, USR-10, USR-11, USR-12, USR-13, USR-14
 
 **Tools**:
@@ -130,11 +130,11 @@ T4 → T5
 
 **Done when**:
 
-- [x] Stub string response removed; id type is `string`
-- [x] Repository update omits password on return
-- [x] Unit tests cover happy path, 404, 400 empty, 403 perfil, 409 email, password hashed, omit password, self-same email allowed
-- [x] Gate check passes: `npm test`
-- [x] Test count: tests pass (no silent deletions)
+- [x] Stub em string removido; tipo do id é `string`
+- [x] Update do repository omite password no retorno
+- [x] Unit tests cobrem happy path, 404, 400 vazio, 403 perfil, 409 e-mail, password hasheado, omit password, mesmo e-mail permitido, P2025→404
+- [x] Gate passa: `npm test`
+- [x] Contagem de testes: suite passa (sem deleções silenciosas)
 
 **Tests**: unit
 **Gate**: quick
@@ -142,12 +142,12 @@ T4 → T5
 
 ---
 
-### T4: Wire PATCH controller to guard and service
+### T4: Ligar controller PATCH ao guard e ao service
 
-**What**: Controller uses string id with ParseUUIDPipe, applies UpdateUserGuard, passes actor from request into service; remove unary `+id` coercion. Do not run e2e until T5 (stale scaffold still present).
+**What**: Controller usa id string com ParseUUIDPipe, aplica UpdateUserGuard, passa o ator da request ao service; remove coerção `+id`. Não rodar e2e até T5 (scaffold obsoleto ainda presente).
 **Where**: `src/users/users.controller.ts`
 **Depends on**: T3
-**Reuses**: Existing UsersController patterns; Delete already uses string id
+**Reuses**: Padrões atuais do UsersController; Delete já usa id string
 **Requirement**: USR-01, USR-02
 
 **Tools**:
@@ -157,11 +157,11 @@ T4 → T5
 
 **Done when**:
 
-- [x] `+id` removed; ParseUUIDPipe yields 400 on bad id
-- [x] UpdateUserGuard applied on PATCH
-- [x] Actor passed to UsersService.update
-- [x] Gate check passes: `npm run build && npx eslint <feature files> && npm test` (full-tree eslint blocked by pre-existing debt outside feature; see SPEC_DEVIATION in design Risks)
-- [x] Test count: unit suite unchanged/pass
+- [x] `+id` removido; ParseUUIDPipe gera 400 em id inválido
+- [x] UpdateUserGuard aplicado no PATCH
+- [x] Ator passado para UsersService.update
+- [x] Gate passa: `npm run build && npx eslint <arquivos da feature> && npm test` (eslint full-tree bloqueado por dívida pré-existente fora da feature)
+- [x] Contagem de testes: suite unit passa
 
 **Tests**: none
 **Gate**: build
@@ -169,13 +169,13 @@ T4 → T5
 
 ---
 
-### T5: Replace obsolete e2e with PATCH /users/:id suite
+### T5: Trocar e2e obsoleto pela suite de PATCH /users/:id
 
-**What**: Delete `test/app.e2e-spec.ts`; add e2e covering admin update 200, self update 200, cross-user 403, missing 404, duplicate email 409, password omitted from body. Update requirement traceability statuses in spec.md.
+**What**: Remover `test/app.e2e-spec.ts`; adicionar e2e cobrindo update admin 200, self 200, cross-user 403, missing 404, e-mail duplicado 409, e-mail inválido 400, sem auth 401, password omitido do body. Atualizar status de rastreabilidade em spec.md.
 **Where**: `test/users-update.e2e-spec.ts`
 **Depends on**: T4
-**Reuses**: AppModule, Auth login, admin create user
-**Requirement**: USR-01, USR-03, USR-05, USR-06, USR-07, USR-10
+**Reuses**: AppModule, login Auth, seed de usuários
+**Requirement**: USR-01, USR-03, USR-05, USR-06, USR-07, USR-10, USR-12
 
 **Tools**:
 
@@ -184,11 +184,11 @@ T4 → T5
 
 **Done when**:
 
-- [x] Hello World e2e removed
-- [x] E2E covers listed paths; password never in response
-- [x] Spec traceability statuses updated for implemented USR-* ids
-- [x] Gate check passes: `npm run build && npx eslint <feature files> && npm test && npm run test:e2e`
-- [x] Test count: e2e cases pass
+- [x] E2e Hello World removido
+- [x] E2E cobre os caminhos listados; password nunca na resposta
+- [x] Status de rastreabilidade USR-* atualizados em spec.md
+- [x] Gate passa: `npm run build && npx eslint <arquivos da feature> && npm test && npm run test:e2e`
+- [x] Contagem de testes: casos e2e passam
 
 **Tests**: e2e
 **Gate**: full
@@ -208,7 +208,7 @@ Phase 2:  T2 → T3
 Phase 3:  T4 → T5
 ```
 
-Execution is strictly sequential - there is no intra-phase parallelism. Total tasks = 5 (single batch, execute inline).
+Execução estritamente sequencial — sem paralelismo intra-fase. Total de tasks = 5 (um único batch, execute inline).
 
 ---
 
@@ -216,11 +216,11 @@ Execution is strictly sequential - there is no intra-phase parallelism. Total ta
 
 | Task | Scope | Status |
 | ---- | ----- | ------ |
-| T1: JWT sub = user id | 1 service change + unit tests | Granular |
+| T1: JWT sub = user id | 1 mudança de service + unit tests | Granular |
 | T2: UpdateUserGuard | 1 guard + unit tests | Granular |
-| T3: UsersService.update | 1 service method (+ repo omit) + unit tests | Granular |
-| T4: Controller wire | 1 controller method | Granular |
-| T5: E2E suite | 1 e2e file + remove scaffold | Granular |
+| T3: UsersService.update | 1 método de service (+ omit no repo) + unit tests | Granular |
+| T4: Wire do controller | 1 método de controller | Granular |
+| T5: Suite e2e | 1 arquivo e2e + remoção do scaffold | Granular |
 
 ---
 
@@ -228,10 +228,10 @@ Execution is strictly sequential - there is no intra-phase parallelism. Total ta
 
 | Task | Depends On (task body) | Diagram Shows | Status |
 | ---- | ---------------------- | ------------- | ------ |
-| T1 | None | (start) | Match |
-| T2 | T1 | T1 → T2 (phase boundary) | Match |
+| T1 | None | (início) | Match |
+| T2 | T1 | T1 → T2 (fronteira de fase) | Match |
 | T3 | T2 | T2 → T3 | Match |
-| T4 | T3 | T3 → T4 (phase boundary) | Match |
+| T4 | T3 | T3 → T4 (fronteira de fase) | Match |
 | T5 | T4 | T4 → T5 | Match |
 
 ---
@@ -243,5 +243,5 @@ Execution is strictly sequential - there is no intra-phase parallelism. Total ta
 | T1: JWT sub | AuthService | unit | unit | OK |
 | T2: UpdateUserGuard | UpdateUserGuard | unit | unit | OK |
 | T3: UsersService.update | UsersService | unit | unit | OK |
-| T4: Controller wire | UsersController | e2e (routes) | none — e2e in T5 when runnable | OK (merge-forward) |
-| T5: PATCH e2e | Controller/route | e2e | e2e | OK |
+| T4: Wire do controller | UsersController | e2e (rotas) | none — e2e em T5 quando executável | OK (merge-forward) |
+| T5: e2e PATCH | Controller/rota | e2e | e2e | OK |

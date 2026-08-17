@@ -14,19 +14,19 @@ _none_
 
 Seen once or not yet corroborated. Tracked, not trusted.
 
-### L-001 - Every validation AC must ship with an HTTP-level or unit assertion for invalid field formats, not only happy-path updates.
+### L-001 - Todo critério de aceite de validação deve nascer com assertion HTTP ou unit para formatos inválidos de campo, não só happy path.
 - signal: `ac_gap` · recurrence: 1 feature(s) · scope: `users` · harmful: 0
 - features: user-profile-update
 - evidence: USR-12 (users)
 - last seen: 2026-08-15T19:27:14Z
 
-### L-002 - Route e2e suites must assert the global auth boundary with an unauthenticated request when the feature is behind AuthGuard.
+### L-002 - Suites e2e de rota devem assertar a fronteira global de auth com request sem token quando a feature está atrás do AuthGuard.
 - signal: `ac_gap` · recurrence: 1 feature(s) · scope: `users` · harmful: 0
 - features: user-profile-update
 - evidence: edge:unauthenticated (users)
 - last seen: 2026-08-15T19:27:15Z
 
-### L-003 - Translate Prisma record-not-found (P2025) on update into NotFoundException and cover it with a service test.
+### L-003 - Traduzir Prisma record-not-found (P2025) no update para NotFoundException e cobrir com teste de service.
 - signal: `ac_gap` · recurrence: 1 feature(s) · scope: `users` · harmful: 0
 - features: user-profile-update
 - evidence: edge:P2025 (users)

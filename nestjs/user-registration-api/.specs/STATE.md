@@ -1,38 +1,46 @@
-# STATE
+# ESTADO
 
 ## Decisions
 
 ### AD-001
-- **Decision**: `.specs/` is the source of truth for features; every new feature follows the tlc-spec-driven harness flow (Specify → Design/Tasks as needed → Execute → Verify).
-- **Reason**: Requirement-to-test traceability and deterministic gates prevent silent drift between intent and code.
-- **Trade-off**: More ceremony per feature in exchange for auditable acceptance criteria and atomic commits.
-- **Scope**: All features under this NestJS user-registration-api project
+- **Decision**: `.specs/` é a fonte da verdade das features; toda feature nova segue o fluxo do harness tlc-spec-driven (Specify → Design/Tasks conforme necessário → Execute → Verify).
+- **Reason**: Rastreabilidade requisito→teste e gates determinísticos evitam deriva silenciosa entre intenção e código.
+- **Trade-off**: Mais cerimônia por feature em troca de critérios de aceite auditáveis e commits atômicos.
+- **Scope**: Todas as features deste projeto NestJS user-registration-api
 - **Date**: 2026-08-15
 - **Status**: active
 
 ### AD-002
-- **Decision**: Build-level gate runs `npx eslint "{src,test}/**/*.ts"` without `--fix`.
-- **Reason**: `npm run lint` uses `--fix` and would mutate files during verification, contaminating the task's atomic commit.
-- **Trade-off**: Gate command differs from the package.json `lint` script; manual lint still auto-fixes.
-- **Scope**: Gate Check Commands in every feature `tasks.md`
+- **Decision**: O gate de Build roda `npx eslint "{src,test}/**/*.ts"` sem `--fix`.
+- **Reason**: O script `npm run lint` usa `--fix` e mutaria arquivos durante a verificação, contaminando o commit atômico da task.
+- **Trade-off**: O comando do gate difere do script `lint` do package.json; o lint manual continua auto-corrigindo.
+- **Scope**: Gate Check Commands em todo `tasks.md` de feature
 - **Date**: 2026-08-15
 - **Status**: active
 
 ### AD-003
-- **Decision**: JWT `sub` claim is the user UUID (`User.id`), not email.
-- **Reason**: Self-update on `PATCH /users/:id` compares token subject to the path id; email-as-sub cannot match a UUID route param.
-- **Trade-off**: Existing tokens with email-as-sub become ownership-mismatched until clients re-login; login response shape otherwise unchanged.
-- **Scope**: AuthService payload and any future ownership checks
+- **Decision**: A claim JWT `sub` é o UUID do usuário (`User.id`), não o e-mail.
+- **Reason**: O self-update em `PATCH /users/:id` compara o subject do token com o id da rota; e-mail como `sub` não casa com o parâmetro UUID.
+- **Trade-off**: Tokens antigos com e-mail em `sub` ficam inconsistentes para ownership até o cliente fazer login de novo; o formato da resposta de login permanece o mesmo.
+- **Scope**: Payload do AuthService e qualquer checagem futura de ownership
+- **Date**: 2026-08-15
+- **Status**: active
+
+### AD-004
+- **Decision**: Conteúdo narrativo em `.specs/` é escrito em português (Brasil); títulos de seção exigidos pelos scripts de validação e palavras-chave EARS (`WHEN`/`WHILE`/`WHERE`/`IF`/`SHALL`) permanecem em inglês.
+- **Reason**: Os gates `validate_spec.py` / `validate_tasks.py` batem em nomes de seção e padrões EARS em inglês; traduzir esses títulos quebraria os gates.
+- **Trade-off**: Artefatos bilingues (estrutura em inglês, prosa em pt-BR) em vez de 100% português.
+- **Scope**: Todos os artefatos sob `.specs/`
 - **Date**: 2026-08-15
 - **Status**: active
 
 ## Handoff
 
 - **Feature**: user-profile-update
-- **Phase / Task**: Execute complete — Verifier PASS
-- **Completed**: T1–T5, fix iteration (USR-12/401/P2025), validation.md PASS
+- **Phase / Task**: Execute concluído — Verifier PASS
+- **Completed**: T1–T5, correção (USR-12/401/P2025), validation.md PASS; artefatos traduzidos para pt-BR
 - **In-progress**: none
-- **Next step**: none — feature ready; push only with explicit go-ahead
+- **Next step**: nenhuma — feature pronta; push só com autorização explícita
 - **Blockers**: none
-- **Uncommitted files**: validation.md, lessons store, `.cursor/` (untracked skill install)
-- **Branch**: master
+- **Uncommitted files**: nenhum
+- **Branch**: feat/001

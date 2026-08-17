@@ -1,4 +1,4 @@
-# User Profile Update Design
+# Design — Atualização de Perfil de Usuário
 
 **Spec**: `.specs/features/user-profile-update/spec.md`
 **Context**: `.specs/features/user-profile-update/context.md`
@@ -8,7 +8,7 @@
 
 ## Architecture Overview
 
-Replace the stub `PATCH /users/:id` with a vertical slice: controller (UUID string + ValidationPipe body) → `UsersService.update` (authz, uniqueness, password hash, omit password) → existing `UsersRepository.updateUser`. Authorization uses a request-aware update guard plus CASL admin capability. JWT `sub` becomes the user UUID so self-update can compare `:id` to the token.
+Substituir o stub de `PATCH /users/:id` por um slice vertical: controller (UUID string + body via ValidationPipe) → `UsersService.update` (authz, unicidade, hash de senha, omit password) → `UsersRepository.updateUser` já existente. Autorização usa um guard de update consciente da request, além da capability CASL de admin. O JWT `sub` passa a ser o UUID do usuário para o self-update comparar `:id` com o token.
 
 ```mermaid
 sequenceDiagram
@@ -25,7 +25,7 @@ sequenceDiagram
     UpdateGuard->>UpdateGuard: admin OR sub equals id
     UpdateGuard->>UsersController: allow
     UsersController->>UsersService: update(id, dto, actor)
-    UsersService->>UsersService: perfil rule, uniqueness, hash password
+    UsersService->>UsersService: regra de perfil, unicidade, hash password
     UsersService->>UsersRepository: updateUser
     UsersRepository->>DB: prisma.user.update
     DB-->>Client: 200 user without password
@@ -39,80 +39,81 @@ sequenceDiagram
 
 | Component | Location | How to Use |
 | --------- | -------- | ---------- |
-| UsersRepository.updateUser | `src/service/user.service.ts` | Wire from UsersService; add omit password on return |
-| UsersRepository.getUser | same | Email uniqueness check excluding self |
-| bcrypt hash pattern | `src/users/users.service.ts` create | Reuse saltRounds = 10 when password present |
-| UpdateUserDto | `src/users/dto/update-user.dto.ts` | Keep PartialType(UserDto); ValidationPipe already global |
-| PoliciesGuard / CheckPolicies | `src/casl/` | Pattern reference; update uses dedicated guard for ownership |
-| ConflictException message | `src/pipes/unique-email.pipe.ts` | Same Portuguese message on duplicate email |
+| UsersRepository.updateUser | `src/service/user.service.ts` | Ligar a partir do UsersService; omitir password no retorno |
+| UsersRepository.getUser | mesmo arquivo | Checagem de unicidade de e-mail excluindo o próprio |
+| Padrão de hash bcrypt | `src/users/users.service.ts` create | Reutilizar saltRounds = 10 quando houver password |
+| UpdateUserDto | `src/users/dto/update-user.dto.ts` | Manter PartialType(UserDto); ValidationPipe já é global |
+| PoliciesGuard / CheckPolicies | `src/casl/` | Referência de padrão; update usa guard dedicado para ownership |
+| Mensagem ConflictException | `src/pipes/unique-email.pipe.ts` | Mesma mensagem em português no e-mail duplicado |
 
 ### Integration Points
 
 | System | Integration Method |
 | ------ | ------------------ |
-| JWT AuthGuard | Global; `request.user` must expose `sub` as user id |
-| Prisma User | Update by `{ id }`; unique on email |
-| CASL | Admin retains unrestricted Update; normal ownership enforced in UpdateUserGuard |
+| JWT AuthGuard | Global; `request.user` deve expor `sub` como id do usuário |
+| Prisma User | Update por `{ id }`; unique em email |
+| CASL | Admin mantém Update irrestrito; ownership do normal no UpdateUserGuard |
 
 ---
 
 ## Components
 
-### AuthService JWT payload (change)
+### AuthService JWT payload (mudança)
 
-- **Purpose**: Put stable user id in `sub` so PATCH ownership checks work
+- **Purpose**: Colocar id estável do usuário em `sub` para as checagens de ownership do PATCH
 - **Location**: `src/auth/auth.service.ts`
 - **Interfaces**:
   - `signIn(email, password): { access_token }` — payload `{ sub: user.id, username, perfil, email }`
 - **Dependencies**: UsersRepository, JwtService
-- **Reuses**: Existing signIn flow; only payload shape changes
+- **Reuses**: Fluxo atual de signIn; só muda o formato do payload
 
 ### UpdateUserGuard
 
-- **Purpose**: Allow PATCH when actor is admin OR `request.user.sub === params.id`
-- **Location**: `src/users/update-user.guard.ts` (or under `src/casl/`)
+- **Purpose**: Permitir PATCH quando o ator é admin OU `request.user.sub === params.id`
+- **Location**: `src/users/update-user.guard.ts`
 - **Interfaces**:
-  - `canActivate(context): Promise<boolean>` — throws ForbiddenException on deny
-- **Dependencies**: CaslAbilityFactory (admin Update check) or direct `perfil === admin`
-- **Reuses**: AuthenticatedUser type from casl-ability.factory
+  - `canActivate(context): Promise<boolean>` — lança ForbiddenException ao negar
+- **Dependencies**: `perfil === admin` direto (ou CaslAbilityFactory)
+- **Reuses**: Tipo AuthenticatedUser do casl-ability.factory
 
 ### UsersService.update
 
-- **Purpose**: Apply business rules and persist update
+- **Purpose**: Aplicar regras de negócio e persistir o update
 - **Location**: `src/users/users.service.ts`
 - **Interfaces**:
   - `update(id: string, dto: UpdateUserDto, actor: AuthenticatedUser): Promise<Omit<User, 'password'>>`
 - **Dependencies**: UsersRepository
-- **Reuses**: create() password hashing; findOne NotFoundException style
+- **Reuses**: hash de senha do create(); estilo NotFoundException do findOne
 - **Rules**:
-  - IF user missing → 404
-  - IF normal actor and `dto.perfil` defined → 403
-  - IF `dto.email` set and another user owns it → 409
-  - IF body has no keys after stripping undefined → 400
-  - IF password set → hash; else omit from prisma data
-  - Return user with password omitted
+  - SE usuário ausente → 404
+  - SE ator normal e `dto.perfil` definido → 403
+  - SE `dto.email` definido e outro usuário o possui → 409
+  - SE body sem chaves após remover undefined → 400
+  - SE password enviado → hash; senão omitir do data do prisma
+  - Retornar usuário sem password
+  - SE Prisma devolver P2025 no write → 404
 
 ### UsersRepository.updateUser
 
-- **Purpose**: Persist and return safe projection
+- **Purpose**: Persistir e devolver projeção segura
 - **Location**: `src/service/user.service.ts`
-- **Change**: `omit: { password: true }` on update result (mirror getUser)
+- **Change**: `omit: { password: true }` no resultado do update (espelha getUser)
 
 ### UsersController.update
 
-- **Purpose**: HTTP adapter
+- **Purpose**: Adaptador HTTP
 - **Location**: `src/users/users.controller.ts`
-- **Change**: Pass `id` as string (no `+id`); `@UseGuards(UpdateUserGuard)`; pass `request.user` into service; optional ParseUUIDPipe for 400 on bad UUID
+- **Change**: Passar `id` como string (sem `+id`); `@UseGuards(UpdateUserGuard)`; passar `request.user` ao service; ParseUUIDPipe para 400 em UUID inválido
 
-### UpdateUserPolicyHandler (optional thin)
+### UpdateUserPolicyHandler (opcional fino)
 
-- Not required if UpdateUserGuard covers admin + ownership. Prefer one guard to avoid double policy layers.
+- Desnecessário se o UpdateUserGuard cobrir admin + ownership. Preferir um único guard para evitar duas camadas de policy.
 
 ---
 
 ## Data Models (if applicable)
 
-### Update payload (existing)
+### Payload de update (existente)
 
 ```typescript
 // UpdateUserDto = PartialType(UserDto)
@@ -126,18 +127,18 @@ sequenceDiagram
 }
 ```
 
-### JWT payload (new)
+### Payload JWT (novo)
 
 ```typescript
 {
   sub: string      // user.id UUID
   username: string
   perfil: Perfil
-  email: string    // convenience for logs; not used for ownership
+  email: string    // conveniência para logs; não usado em ownership
 }
 ```
 
-**Relationships**: `sub` must equal `User.id` for self-update checks.
+**Relationships**: `sub` deve ser igual a `User.id` nas checagens de self-update.
 
 ---
 
@@ -145,12 +146,12 @@ sequenceDiagram
 
 | Error Scenario | Handling | User Impact |
 | -------------- | -------- | ----------- |
-| No / invalid JWT | AuthGuard UnauthorizedException | 401 |
-| Normal updates another user | UpdateUserGuard ForbiddenException | 403 |
-| Normal sends perfil | UsersService ForbiddenException | 403 |
-| Unknown id | NotFoundException | 404 |
-| Duplicate email | ConflictException | 409 |
-| Empty body / invalid fields / bad UUID | BadRequestException / ValidationPipe / ParseUUIDPipe | 400 |
+| JWT ausente / inválido | AuthGuard UnauthorizedException | 401 |
+| Normal atualiza outro usuário | UpdateUserGuard ForbiddenException | 403 |
+| Normal envia perfil | UsersService ForbiddenException | 403 |
+| Id desconhecido | NotFoundException | 404 |
+| E-mail duplicado | ConflictException | 409 |
+| Body vazio / campos inválidos / UUID inválido | BadRequestException / ValidationPipe / ParseUUIDPipe | 400 |
 
 ---
 
@@ -158,11 +159,11 @@ sequenceDiagram
 
 | Concern | Location (file:line) | Impact | Mitigation |
 | ------- | -------------------- | ------ | ---------- |
-| JWT `sub` is email today | `src/auth/auth.service.ts:23` | Self-update by UUID impossible | Change `sub` to `user.id` (AD-003); tokens issued before change become ownership-mismatched until re-login |
-| Stale scaffold e2e | `test/app.e2e-spec.ts` | Full gate fails | Replace with users PATCH e2e in this feature |
-| No unit tests / jest fails empty | jest config | Quick gate fails | First task ships `*.spec.ts` |
-| Password validators missing on UserDto | `create-user.dto.ts` | Weak password on update | Out of scope; hash if present only |
-| Throttler 5/60s | `app.module.ts` | e2e may throttle | Space requests or raise limit in e2e module override if needed |
+| JWT `sub` era e-mail | `src/auth/auth.service.ts` | Self-update por UUID impossível | Mudar `sub` para `user.id` (AD-003); tokens antigos ficam inconsistentes até novo login |
+| E2e scaffold obsoleto | `test/app.e2e-spec.ts` | Gate Full falha | Substituir por e2e de PATCH users nesta feature |
+| Sem testes unitários / jest vazio falha | config jest | Gate Quick falha | Primeira task já entrega `*.spec.ts` |
+| Sem validators de password no UserDto | `create-user.dto.ts` | Senha fraca no update | Fora de escopo; só hashear se presente |
+| Throttler 5/60s | `app.module.ts` | e2e pode ser throttled | Sobrescrever ThrottlerGuard no e2e |
 
 ---
 
@@ -170,10 +171,10 @@ sequenceDiagram
 
 | Decision | Choice | Rationale |
 | -------- | ------ | --------- |
-| JWT `sub` claim | User UUID (`user.id`) | Ownership compare on `:id` requires id in token; email in `sub` blocks RF03 |
-| Authz mechanism | Dedicated `UpdateUserGuard` (admin OR self) | Existing PoliciesHandler API has no request/params; avoids rewriting all policies |
-| Perfil restriction | Enforced in UsersService after guard | Guard answers "who may touch this row"; service answers "which fields" |
-| Email uniqueness | Service check excluding current id | UniqueEmailPipe is create-oriented (no id to exclude) |
-| Stale e2e | Delete Hello World test; add PATCH users e2e | Required for Full/Build gates |
+| Claim JWT `sub` | UUID do usuário (`user.id`) | Comparar ownership em `:id` exige id no token; e-mail em `sub` bloqueia RF03 |
+| Mecanismo de authz | `UpdateUserGuard` dedicado (admin OU self) | API atual de PoliciesHandler não recebe request/params; evita reescrever todas as policies |
+| Restrição de perfil | Enforce no UsersService após o guard | Guard responde "quem pode tocar esta linha"; service responde "quais campos" |
+| Unicidade de e-mail | Checagem no service excluindo o id atual | UniqueEmailPipe é orientado a create (sem id para excluir) |
+| E2e obsoleto | Remover Hello World; adicionar e2e de PATCH users | Necessário para gates Full/Build |
 
-> **Project-level decisions:** JWT `sub` = user id is recorded as AD-003 in `.specs/STATE.md`.
+> **Decisões de projeto:** JWT `sub` = id do usuário está em AD-003 no `.specs/STATE.md`.

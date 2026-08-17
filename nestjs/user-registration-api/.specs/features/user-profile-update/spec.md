@@ -1,45 +1,45 @@
-# User Profile Update Specification
+# Especificação — Atualização de Perfil de Usuário
 
 ## Problem Statement
 
-`PATCH /users/:id` is a stub that returns a string and coerces UUID with `+id`. The repository already has `updateUser`, but it is unused. Callers cannot update profile data, and there is no authorization or uniqueness check on update.
+`PATCH /users/:id` é um stub que devolve uma string e coerciona UUID com `+id`. O repositório já tem `updateUser`, mas não é usado. Chamadores não conseguem atualizar dados de perfil, e não há autorização nem checagem de unicidade na atualização.
 
 ## Goals
 
-- [ ] Authenticated users can update an existing user by UUID with a real persistence path
-- [ ] Authorization enforces self-update for normal users and any-user update for admins; only admin may change `perfil`
-- [ ] Email uniqueness and validation fail with precise HTTP status codes; responses never include `password`
+- [ ] Usuários autenticados podem atualizar um usuário existente por UUID com persistência real
+- [ ] Autorização garante self-update para usuários normal e update de qualquer usuário para admin; só admin altera `perfil`
+- [ ] Unicidade de e-mail e validação falham com status HTTP precisos; respostas nunca incluem `password`
 
 ## Out of Scope
 
-Explicitly excluded. Documented to prevent scope creep.
+Exclusões explícitas. Documentadas para evitar escopo creeping.
 
 | Feature | Reason |
 | ------- | ------ |
-| Public self-registration (RF01) | Separate product decision |
-| Omitting password on GET list | Separate security fix |
-| Login 401 vs 404 | Separate auth fix |
-| Email sending (RF04) | Separate feature |
-| Invoice / NFe (RF05) | Separate feature |
-| GET user by id | Separate RF02 gap |
+| Auto-cadastro público (RF01) | Decisão de produto separada |
+| Omitir password na listagem GET | Correção de segurança separada |
+| Login 401 vs 404 | Correção de auth separada |
+| Envio de e-mail (RF04) | Feature separada |
+| Nota fiscal / NFe (RF05) | Feature separada |
+| GET usuário por id | Gap separado do RF02 |
 
 ---
 
 ## Assumptions & Open Questions
 
-Every ambiguity is resolved or recorded here - nothing is left silently unclear.
+Toda ambiguidade está resolvida ou registrada aqui — nada fica silenciosamente indefinido.
 
 | Assumption / decision | Chosen default | Rationale | Confirmed? |
 | --------------------- | -------------- | --------- | ---------- |
-| Who may update | Admin: any user; normal: own record only (`sub === id`) | Matches PRD permission matrix for own-profile edit | y |
-| Who may change `perfil` | Admin only; normal sending `perfil` → 403 | PRD rule 5 | y |
-| Updatable fields | Partial: name, email, neighborhood, street, password; perfil admin-only | Aligns with `UserDto` / `UpdateUserDto` shape | y |
-| Empty PATCH body | 400 Bad Request | No-op updates are not useful and hide client bugs | y |
-| Duplicate email on update | 409 Conflict (exclude self) | Same contract family as create + UniqueEmailPipe | y |
-| Response body | 200 + user without `password` | Matches `findOne` omit pattern; avoids hash leak | y |
-| Id type | UUID string, no `+id` | Schema uses `String @id @default(uuid())` | y |
-| Missing user | 404 Not Found | Matches `findOne` / Nest style | y |
-| Password on update | Hash with bcrypt saltRounds 10 when provided | Same as create path | y |
+| Quem pode atualizar | Admin: qualquer usuário; normal: só o próprio (`sub === id`) | Alinha à matriz de permissões do PRD para editar próprio perfil | y |
+| Quem pode mudar `perfil` | Só admin; normal enviando `perfil` → 403 | Regra 5 do PRD | y |
+| Campos atualizáveis | Parcial: name, email, neighborhood, street, password; perfil só admin | Alinha ao formato de `UserDto` / `UpdateUserDto` | y |
+| Body PATCH vazio | 400 Bad Request | Update sem efeito não é útil e esconde bug de cliente | y |
+| E-mail duplicado no update | 409 Conflict (excluindo o próprio) | Mesmo contrato do create + UniqueEmailPipe | y |
+| Corpo da resposta | 200 + usuário sem `password` | Mesmo padrão de omit do `findOne`; evita vazamento de hash | y |
+| Tipo do id | UUID string, sem `+id` | Schema usa `String @id @default(uuid())` | y |
+| Usuário inexistente | 404 Not Found | Alinha ao `findOne` / estilo Nest | y |
+| Senha no update | Hash com bcrypt saltRounds 10 quando enviada | Mesmo caminho do create | y |
 
 **Open questions:** none - all resolved or logged above.
 
@@ -47,13 +47,13 @@ Every ambiguity is resolved or recorded here - nothing is left silently unclear.
 
 ## User Stories
 
-### P1: Persist profile update ⭐ MVP
+### P1: Persistir atualização de perfil ⭐ MVP
 
-**User Story**: As an authenticated admin, I want to update any user's profile fields by UUID so that registration data stays current.
+**User Story**: Como admin autenticado, quero atualizar campos de perfil de qualquer usuário por UUID para manter os dados de cadastro atualizados.
 
-**Why P1**: Core of RF03; without persistence the endpoint is unusable.
+**Why P1**: Núcleo do RF03; sem persistência o endpoint é inutilizável.
 
-**Acceptance Criteria** (each line is one EARS pattern):
+**Acceptance Criteria** (cada linha é um padrão EARS):
 
 1. WHEN an authenticated admin sends `PATCH /users/:id` with a valid partial body THEN the system SHALL persist the changes and respond with HTTP 200 and the updated user without `password`
 2. WHEN `:id` is a UUID string THEN the system SHALL use it as the user primary key without numeric coercion
@@ -61,15 +61,15 @@ Every ambiguity is resolved or recorded here - nothing is left silently unclear.
 4. IF the request body contains no updatable fields THEN the system SHALL respond with HTTP 400
 5. The system SHALL never include `password` in the update response body
 
-**Independent Test**: Create a user, PATCH name/street as admin with JWT, GET by email and confirm new values; response has no password field.
+**Independent Test**: Criar usuário, PATCH name/street como admin com JWT, GET por e-mail e confirmar novos valores; resposta sem campo password.
 
 ---
 
-### P1: Self-update and perfil guard ⭐ MVP
+### P1: Self-update e proteção de perfil ⭐ MVP
 
-**User Story**: As a normal authenticated user, I want to update my own profile (but not my role) so that I can keep my data current without admin help.
+**User Story**: Como usuário normal autenticado, quero atualizar meu próprio perfil (mas não meu papel) para manter meus dados sem ajuda de admin.
 
-**Why P1**: Required by the PRD permission matrix and rule 5.
+**Why P1**: Exigido pela matriz de permissões do PRD e pela regra 5.
 
 **Acceptance Criteria**:
 
@@ -78,15 +78,15 @@ Every ambiguity is resolved or recorded here - nothing is left silently unclear.
 3. IF an authenticated normal user includes `perfil` in the body THEN the system SHALL respond with HTTP 403
 4. WHEN an authenticated admin includes `perfil` in the body THEN the system SHALL persist the new `perfil` value
 
-**Independent Test**: Login as normal user A, PATCH own id succeeds; PATCH user B id returns 403; PATCH with `perfil` as normal returns 403; admin PATCH perfil succeeds.
+**Independent Test**: Login como normal A, PATCH no próprio id ok; PATCH no id de B → 403; PATCH com `perfil` como normal → 403; admin PATCH perfil ok.
 
 ---
 
-### P1: Email uniqueness on update ⭐ MVP
+### P1: Unicidade de e-mail na atualização ⭐ MVP
 
-**User Story**: As the API consumer, I want duplicate emails rejected on update so that uniqueness is preserved after create.
+**User Story**: Como consumidor da API, quero que e-mails duplicados sejam rejeitados no update para preservar a unicidade após o create.
 
-**Why P1**: Uniqueness is a core RNF already enforced on create; update must not bypass it.
+**Why P1**: Unicidade é RNF central já no create; o update não pode furar isso.
 
 **Acceptance Criteria**:
 
@@ -94,22 +94,22 @@ Every ambiguity is resolved or recorded here - nothing is left silently unclear.
 2. WHEN the new `email` equals the current user's email THEN the system SHALL accept the update (no conflict with self)
 3. IF provided field values fail validation (e.g. invalid email format) THEN the system SHALL respond with HTTP 400
 
-**Independent Test**: Two users; update user A email to user B's email → 409; update A email to same value → 200.
+**Independent Test**: Dois usuários; update do e-mail de A para o de B → 409; update do e-mail de A para o mesmo valor → 200.
 
 ---
 
-### P2: Password change on update
+### P2: Troca de senha no update
 
-**User Story**: As an authenticated user allowed to update the target, I want to change password via PATCH so that credentials can rotate without a separate endpoint.
+**User Story**: Como usuário autenticado autorizado a atualizar o alvo, quero trocar a senha via PATCH para rotacionar credenciais sem endpoint separado.
 
-**Why P2**: Useful but secondary to profile fields; same endpoint, optional field.
+**Why P2**: Útil, mas secundário aos campos de perfil; mesmo endpoint, campo opcional.
 
 **Acceptance Criteria**:
 
 1. WHEN the body includes `password` THEN the system SHALL store a bcrypt hash (not plaintext) and omit `password` from the response
 2. WHERE `password` is absent the system SHALL leave the existing password hash unchanged
 
-**Independent Test**: PATCH with password; login with new password succeeds; old password fails; response has no password.
+**Independent Test**: PATCH com password; login com a nova senha ok; senha antiga falha; resposta sem password.
 
 ---
 
@@ -126,32 +126,32 @@ Every ambiguity is resolved or recorded here - nothing is left silently unclear.
 
 | Requirement ID | Story | Phase | Status |
 | -------------- | ----- | ----- | ------ |
-| USR-01 | P1: Persist profile update | Execute | Verified |
-| USR-02 | P1: Persist profile update | Execute | Verified |
-| USR-03 | P1: Persist profile update | Execute | Verified |
-| USR-04 | P1: Persist profile update | Execute | Verified |
-| USR-05 | P1: Persist profile update | Execute | Verified |
-| USR-06 | P1: Self-update and perfil guard | Execute | Verified |
-| USR-07 | P1: Self-update and perfil guard | Execute | Verified |
-| USR-08 | P1: Self-update and perfil guard | Execute | Verified |
-| USR-09 | P1: Self-update and perfil guard | Execute | Verified |
-| USR-10 | P1: Email uniqueness on update | Execute | Verified |
-| USR-11 | P1: Email uniqueness on update | Execute | Verified |
-| USR-12 | P1: Email uniqueness on update | Execute | Verified |
-| USR-13 | P2: Password change on update | Execute | Verified |
-| USR-14 | P2: Password change on update | Execute | Verified |
+| USR-01 | P1: Persistir atualização de perfil | Execute | Verified |
+| USR-02 | P1: Persistir atualização de perfil | Execute | Verified |
+| USR-03 | P1: Persistir atualização de perfil | Execute | Verified |
+| USR-04 | P1: Persistir atualização de perfil | Execute | Verified |
+| USR-05 | P1: Persistir atualização de perfil | Execute | Verified |
+| USR-06 | P1: Self-update e proteção de perfil | Execute | Verified |
+| USR-07 | P1: Self-update e proteção de perfil | Execute | Verified |
+| USR-08 | P1: Self-update e proteção de perfil | Execute | Verified |
+| USR-09 | P1: Self-update e proteção de perfil | Execute | Verified |
+| USR-10 | P1: Unicidade de e-mail na atualização | Execute | Verified |
+| USR-11 | P1: Unicidade de e-mail na atualização | Execute | Verified |
+| USR-12 | P1: Unicidade de e-mail na atualização | Execute | Verified |
+| USR-13 | P2: Troca de senha no update | Execute | Verified |
+| USR-14 | P2: Troca de senha no update | Execute | Verified |
 
 **ID format:** `USR-[NUMBER]`
 
 **Status values:** Pending → In Design → In Tasks → Implementing → Verified
 
-**Coverage:** 14 total, 14 mapped to tasks, 0 unmapped
+**Coverage:** 14 total, 14 mapeados a tasks, 0 sem mapeamento
 
 ---
 
 ## Success Criteria
 
-- [ ] Admin can update any user by UUID and receive 200 without password in the body
-- [ ] Normal user can update only self; cross-user and perfil change return 403
-- [ ] Duplicate email on update returns 409; self-same email allowed
-- [ ] Stub string response and `+id` coercion are gone
+- [ ] Admin pode atualizar qualquer usuário por UUID e receber 200 sem password no body
+- [ ] Usuário normal atualiza só a si; cross-user e troca de perfil retornam 403
+- [ ] E-mail duplicado no update retorna 409; mesmo e-mail do próprio permitido
+- [ ] Stub em string e coerção `+id` foram removidos
